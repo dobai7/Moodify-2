@@ -39,7 +39,8 @@ export async function registerController(req, res) {
 
 
     const sub = "Request For Verification"
-    const link = `http://localhost:3000/api/auth/verify-email?token=${token}`
+    // const link = `http://localhost:3000/api/auth/verify-email?token=${token}`
+    const link = `${process.env.BACKEND_URL || "http://localhost:3000"}/api/auth/verify-email?token=${token}`
 
     await sendMail(email, sub, "", verificationMailHtml(link))
 
@@ -79,9 +80,18 @@ export async function loginController(req, res) {
 
   const token = await jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" })
 
+  // res.cookie("token", token, {
+  //   httpOnly: true,
+  //   sameSite: "lax",  // cross-origin ke liye
+  // })
+
+  const isProd = process.env.NODE_ENV === "production"
+
   res.cookie("token", token, {
     httpOnly: true,
-    sameSite: "lax",  // cross-origin ke liye
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+    maxAge: 24 * 60 * 60 * 1000
   })
 
 
@@ -142,7 +152,11 @@ export async function logoutController(req, res) {
       deletedAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 1 day
     })
 
-    res.clearCookie("token")
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax"
+    })
     res.status(200).json({ message: "logged out successfully" })
 
   } catch (err) {
