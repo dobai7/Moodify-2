@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(cors({
   // origin: ["http://localhost:5173","https://moodify-jwuc.onrender.com/"],
-  origin: ["http://localhost:5173", "https://moodify-2-tb5x.onrender.com"],
+  origin: ["http://localhost:5173", "https://moodify-2.vercel.app"],
   credentials: true
 }))
 
